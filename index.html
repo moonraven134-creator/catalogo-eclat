@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Éclat • Catálogo Exclusivo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a1a1a;
+            --accent: #d4af37;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311026 100%);
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --border-color: rgba(212, 175, 55, 0.3);
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px 15px;
+            min-height: 100vh;
+        }
+        .logo-container { text-align: center; margin-bottom: 5px; }
+        .logo-monogram {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 52px; height: 52px; border: 2px solid var(--accent);
+            border-radius: 50%; font-family: 'Playfair Display', serif;
+            font-size: 24px; color: var(--accent); background: rgba(212, 175, 55, 0.08);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.25);
+        }
+        .menu-toggle-btn {
+            position: fixed; top: 20px; left: 20px; background: rgba(255, 255, 255, 0.95);
+            color: #111; border: 2px solid var(--accent); padding: 10px 16px;
+            border-radius: 50px; font-weight: 700; font-size: 13px; cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3); z-index: 100; display: flex;
+            align-items: center; gap: 8px; transition: all 0.3s ease;
+        }
+        .menu-toggle-btn:hover { background: var(--accent); color: #000; transform: scale(1.05); }
+        .sidebar {
+            position: fixed; top: 0; left: -320px; width: 300px; height: 100%;
+            background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(15px);
+            border-right: 2px solid var(--border-color); z-index: 200;
+            box-shadow: 10px 0 40px rgba(0,0,0,0.6); transition: left 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+            display: flex; flex-direction: column; padding: 25px 20px; box-sizing: border-box; overflow-y: auto;
+        }
+        .sidebar.open { left: 0; }
+        .sidebar-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;
+        }
+        .sidebar-title { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--accent); letter-spacing: 2px; margin: 0; }
+        .sidebar-close { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+        .sidebar-search {
+            width: 100%; padding: 12px 18px; font-size: 14px; border: 2px solid var(--border-color);
+            border-radius: 30px; outline: none; background: rgba(255, 255, 255, 0.95); color: #111; margin-bottom: 25px; box-sizing: border-box;
+        }
+        .sidebar-categories { display: flex; flex-direction: column; gap: 10px; }
+        .cat-btn-sidebar {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 11px 18px; border-radius: 12px; font-size: 13px; font-weight: 600;
+            color: #ffffff; text-align: left; cursor: pointer; transition: all 0.3s ease;
+        }
+        .cat-btn-sidebar:hover, .cat-btn-sidebar.active {
+            background: var(--accent); color: #000000; font-weight: 700; transform: translateX(5px);
+        }
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); z-index: 150;
+        }
+        .sidebar-overlay.active { display: block; }
+        header { text-align: center; margin-bottom: 15px; }
+        h1 { font-family: 'Playfair Display', serif; font-size: 40px; color: #ffffff; letter-spacing: 6px; margin: 5px 0 0 0; }
+        .subtitle { color: var(--accent); font-size: 12px; letter-spacing: 4px; text-transform: uppercase; margin-top: 5px; font-weight: 700; }
+        .grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px; max-width: 1200px; margin: 0 auto;
+        }
+        .card {
+            background: #ffffff !important; color: #1f2937 !important; border-radius: 18px;
+            overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.35); display: flex;
+            flex-direction: column; border: 1px solid rgba(212, 175, 55, 0.3); cursor: pointer; transition: transform 0.3s ease;
+        }
+        .card:hover { transform: translateY(-6px); }
+        .img-container { width: 100%; height: 250px; background: #fbfbfb; display: flex; align-items: center; justify-content: center; padding: 12px; box-sizing: border-box; }
+        .card img { width: 100%; height: 100%; object-fit: contain; }
+        .sin-imagen { color: #7a7062; font-size: 11px; text-align: center; }
+        .card-body { padding: 14px 18px 18px 18px; display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1; }
+        .badge { display: inline-block; padding: 3px 9px; font-size: 10px; font-weight: 700; border-radius: 20px; text-transform: uppercase; }
+        .disponible { background-color: #d1fae5; color: #065f46; }
+        .no-disponible { background-color: #fee2e2; color: #991b1b; }
+        .brand { font-size: 10px; color: #9a7b0c; text-transform: uppercase; font-weight: 700; }
+        .title { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: #1f2937; }
+        .footer-card { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f3f5; padding-top: 10px; margin-top: auto; }
+        .price { font-size: 19px; font-weight: 700; color: #111827; }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle-btn" onclick="toggleSidebar()"><span>☰</span> Filtros y Búsqueda</button>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3 class="sidebar-title">FILTRAR</h3>
+            <button class="sidebar-close" onclick="toggleSidebar()">×</button>
+        </div>
+        <input type="text" id="searchInput" class="sidebar-search" onkeyup="filterCatalog()" placeholder="✨ Buscar producto...">
+        <div class="sidebar-categories">
+            <button class="cat-btn-sidebar active" onclick="filterByCategory('TODOS', this)">Todos los productos</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('ACCESORIOS', this)">ACCESORIOS</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('BALSAMO LABIAL', this)">BALSAMO LABIAL</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('COLONIA', this)">COLONIA</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('CREMA CORPORAL', this)">CREMA CORPORAL</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('CUIDADO DEL CABELLO', this)">CUIDADO DEL CABELLO</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('DELINEADOR', this)">DELINEADOR</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('FRESCOR', this)">FRESCOR</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('GEL HIDRATANTE', this)">GEL HIDRATANTE</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('JABONES VEGETALES', this)">JABONES VEGETALES</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('KIT BELLEZA', this)">KIT BELLEZA</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('LAPIZ PARA OJOS', this)">LAPIZ PARA OJOS</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('MANTEQUILLA', this)">MANTEQUILLA</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('PERFUME', this)">PERFUME</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('PESTAÑINA', this)">PESTAÑINA</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('PROTECTOR SOLAR', this)">PROTECTOR SOLAR</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('PULPA', this)">PULPA</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('RUBOR', this)">RUBOR</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('SHAMPOO', this)">SHAMPOO</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('SKINCARE', this)">SKINCARE</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('SOMBRAS', this)">SOMBRAS</button>
+            <button class="cat-btn-sidebar" onclick="filterByCategory('SPLASH', this)">SPLASH</button>
+
+        </div>
+    </div>
+    <header>
+        <div class="logo-container"><div class="logo-monogram">É</div></div>
+        <h1>ÉCLAT</h1>
+        <div class="subtitle">Catálogo Exclusivo de Belleza</div>
+    </header>
+    <div class="grid" id="productGrid">
+
+        <div class="card" data-search="perfume fleur l'bel" data-category="PERFUME">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/18QDUFdX-1kqRg-Cqlegf9k4lOAQdihhQ" alt="FLEUR" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">L'BEL</div>
+                    <div class="title">PERFUME FLEUR</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$60.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="perfume azul infinito esika" data-category="PERFUME">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1qxRHo3UVCMkcPVGA_2w-2v_Wt1ln3L1Q" alt="AZUL INFINITO" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">ESIKA</div>
+                    <div class="title">PERFUME AZUL INFINITO</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$55.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="gel hidratante humor meu primero escarchado natura" data-category="GEL HIDRATANTE">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/10DEGjnpPZw4lfAKsJPU4L-Y5ePYmBl-o" alt="HUMOR MEU PRIMERO ESCARCHADO" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">GEL HIDRATANTE HUMOR MEU PRIMERO ESCARCHADO</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$25.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="frescor ekos pitanga preta natura" data-category="FRESCOR">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1TqaBhrLTqXdJ9OWcMGp-GwS9DUm6Pow2" alt="EKOS PITANGA PRETA" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">FRESCOR EKOS PITANGA PRETA</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$65.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="frescor ekos maracuya sueños natura" data-category="FRESCOR">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1vhELAX_FfGsfCQqkFBwSO0MSFK1JoOkC" alt="EKOS MARACUYA SUEÑOS" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">FRESCOR EKOS MARACUYA SUEÑOS</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$65.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="frescor ish pink natura" data-category="FRESCOR">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1DEFd18Yk3spxfRUA6b4rXk8wlNrd6_p9" alt="ISH PINK" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">FRESCOR ISH PINK</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$65.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="crema corporal cupuacu natura" data-category="CREMA CORPORAL">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/13ZPtbrrM_2fSQxakH5WZgKjBdTR1Wd9F" alt="CUPUACU" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">CREMA CORPORAL CUPUACU</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$60.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="mantequilla cupuacu natura" data-category="MANTEQUILLA">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1VaKjwtSiG7TZDSWjPEhpURKKOAm_rZBo" alt="CUPUACU" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">MANTEQUILLA CUPUACU</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$70.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="colonia aguas natura" data-category="COLONIA">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1cKHLk-WQsqgJp94PXfS2Ezx-XFEIqBtS" alt="AGUAS" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">COLONIA AGUAS</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$40.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="perfume topaze coleccion iconic avon" data-category="PERFUME">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1ZqY8VPrTQ_Ds1UKQNLG58u8ys_sJ3650" alt="TOPAZE COLECCION ICONIC" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">AVON</div>
+                    <div class="title">PERFUME TOPAZE COLECCION ICONIC</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$75.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="perfume sweet honesty colleccion iconic avon" data-category="PERFUME">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1BC26zKdzd1BRCFjlO8vf7UIPsQ2oAORo" alt="SWEET HONESTY COLLECCION ICONIC" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">AVON</div>
+                    <div class="title">PERFUME SWEET HONESTY COLLECCION ICONIC</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$75.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="perfume sweet black seduction cyzone" data-category="PERFUME">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1r3gXFCihDlHumxfEKrYQw7AwEhwEGZIW" alt="SWEET BLACK SEDUCTION" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">CYZONE</div>
+                    <div class="title">PERFUME SWEET BLACK SEDUCTION</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$30.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="kit belleza expression esika" data-category="KIT BELLEZA">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1d1wxoJzSZZCWCMp-ge_A4RtAOAEEezZG" alt="EXPRESSION" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">ESIKA</div>
+                    <div class="title">KIT BELLEZA EXPRESSION</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$84.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="perfume soft musk avon" data-category="PERFUME">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1ucY1k3eQQS6oM7hkieZq4wPVS_8iz1C_" alt="SOFT MUSK" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">AVON</div>
+                    <div class="title">PERFUME SOFT MUSK</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$35.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="pulpa cacau natura" data-category="PULPA">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1gQi0cdaeDZMCQMmsp1A6EFRmY3TIv_X2" alt="CACAU" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">PULPA CACAU</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$35.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="pulpa maracuya natura" data-category="PULPA">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1BO760hWBssCGWnYMmKMSlBuZs5PLA4S7" alt="MARACUYA" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">PULPA MARACUYA</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$35.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="crema corporal todo dia algodon natura" data-category="CREMA CORPORAL">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/11A0Jga545NqyiU_bWAdopdYA8KWdld2h" alt="TODO DIA ALGODON" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">CREMA CORPORAL TODO DIA ALGODON</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$55.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="colonia horus azul marine natura" data-category="COLONIA">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1QniuUJ8QgMQPj3e_JY0pEJSfz0AXhVH3" alt="HORUS AZUL MARINE" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">COLONIA HORUS AZUL MARINE</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$50.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="perfume black suede charm natura" data-category="PERFUME">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1ZqdGOVOBJRz_DGUewVIS0fjf2HApi9rO" alt="BLACK SUEDE CHARM" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">PERFUME BLACK SUEDE CHARM</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$35.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="splash violeta y lichi avon" data-category="SPLASH">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1KA4NVaE3bXka1X6_U6N13dfY_2H86dB-" alt="VIOLETA Y LICHI" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">AVON</div>
+                    <div class="title">SPLASH VIOLETA Y LICHI</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$18.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="splash lilas y orquideas avon" data-category="SPLASH">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1r3Jc3fZpKDlY5Rks6vrRqcN7BgQYYHPK" alt="LILAS Y ORQUIDEAS" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">AVON</div>
+                    <div class="title">SPLASH LILAS Y ORQUIDEAS</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$14.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="splash delirio leonisa" data-category="SPLASH">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1XSXfStUNeykD9y-C0E-LJXuB6q2fj201" alt="DELIRIO" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">LEONISA</div>
+                    <div class="title">SPLASH DELIRIO</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$55.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="pestañina mascara mega full size apa negra esika" data-category="PESTAÑINA">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1rkp2JDqUqBbfjyK2H_btFq5enfLjnruz" alt="MASCARA MEGA FULL SIZE APA NEGRA" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">ESIKA</div>
+                    <div class="title">PESTAÑINA MASCARA MEGA FULL SIZE APA NEGRA</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$22.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="pestañina exxtravagant extreme volume mascara avon" data-category="PESTAÑINA">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1I6hDPD_CqRiTZ_UvYy3Dr-He6Xs7PJnq" alt="EXXTRAVAGANT EXTREME VOLUME MASCARA" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">AVON</div>
+                    <div class="title">PESTAÑINA EXXTRAVAGANT EXTREME VOLUME MASCARA</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$24.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="pestañina faces negro natura" data-category="PESTAÑINA">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1l5EOCVCufHv6rZ470WnmBIfgfRrnuqkg" alt="FACES NEGRO" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">PESTAÑINA FACES NEGRO</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$28.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="rubor ultra color red one avon" data-category="RUBOR">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1ElucZYUVrIk4e8tJi338ZWhz2MyQnAtl" alt="ULTRA COLOR RED ONE" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">AVON</div>
+                    <div class="title">RUBOR ULTRA COLOR RED ONE</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$15.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="sombras ocean vibe avon" data-category="SOMBRAS">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1sqbJPFRz3tK6N2SB8zJiJfruhBkpzT2q" alt="OCEAN VIBE" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">AVON</div>
+                    <div class="title">SOMBRAS OCEAN VIBE</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$15.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="delineador plumon negro avon" data-category="DELINEADOR">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1tOmAYiH0pjkg6nKj1CllJAOYPJwHI9Z4" alt="PLUMON NEGRO" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge no-disponible">AGOTADO</span>
+                    <div class="brand">AVON</div>
+                    <div class="title">DELINEADOR PLUMON NEGRO</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$15.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="lapiz para ojos azul mate avon" data-category="LAPIZ PARA OJOS">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1WEDHPtLwijc-08SLJQyfRNe5WzHlllX_" alt="AZUL MATE" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">AVON</div>
+                    <div class="title">LAPIZ PARA OJOS AZUL MATE</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$10.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="delineador liquido rojo pincel avon" data-category="DELINEADOR">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/11pGNHUaW0wDwbMmJHh8P4vATBOxuOWr_" alt="LIQUIDO ROJO PINCEL" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">AVON</div>
+                    <div class="title">DELINEADOR LIQUIDO ROJO PINCEL</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$15.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="balsamo labial rose creme l'bel" data-category="BALSAMO LABIAL">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1DLx5Ic9T6FX14tCSTM-7xj1gNgEpEkK3" alt="ROSE CREME" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">L'BEL</div>
+                    <div class="title">BALSAMO LABIAL ROSE CREME</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$18.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="balsamo labial red avon" data-category="BALSAMO LABIAL">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/15rpEhykBaOFxfyxawkIdTu0kg1x7RZNY" alt="RED" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">AVON</div>
+                    <div class="title">BALSAMO LABIAL RED</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$15.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="crema corporal todo dia fresa y vainilla dorada natura" data-category="CREMA CORPORAL">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1hyxgWc_eQsYI19jO4eEbbnVYP60rd_bp" alt="TODO DIA FRESA Y VAINILLA DORADA" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">CREMA CORPORAL TODO DIA FRESA Y VAINILLA DORADA</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$55.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="crema corporal todo dia ciruela y flor de vainilla natura" data-category="CREMA CORPORAL">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1ZFKpO6sw1dz7m7gRwovjbIIrrf-leyGX" alt="TODO DIA CIRUELA Y FLOR DE VAINILLA" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">CREMA CORPORAL TODO DIA CIRUELA Y FLOR DE VAINILLA</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$55.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="crema corporal todo dia frutos rojos natura" data-category="CREMA CORPORAL">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1THDkzRFunYWQLideWlXpirFmCHsQi89o" alt="TODO DIA FRUTOS ROJOS" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge no-disponible">AGOTADO</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">CREMA CORPORAL TODO DIA FRUTOS ROJOS</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$55.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="jabones vegetales cereza negra y praliné cajax5 natura" data-category="JABONES VEGETALES">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1B43l82qtVd310Z0ZZu7-nPXDDCeCvHDJ" alt="CEREZA NEGRA Y PRALINÉ CAJAx5" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge no-disponible">AGOTADO</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">JABONES VEGETALES CEREZA NEGRA Y PRALINÉ CAJAx5</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$35.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="jabones vegetales algodón cajax5 natura" data-category="JABONES VEGETALES">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1UdjaSIMLhT2ChvJ0yDL3AMnuNRTAUTP2" alt="ALGODÓN CAJAx5" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge no-disponible">AGOTADO</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">JABONES VEGETALES ALGODÓN CAJAx5</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$35.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="jabones vegetales fresa y vainilla dorada cajax5 natura" data-category="JABONES VEGETALES">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1Yaagtt3d9qOHFZqqocZwPEFR_9yV-Vzj" alt="FRESA Y VAINILLA DORADA CAJAx5" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">JABONES VEGETALES FRESA Y VAINILLA DORADA CAJAx5</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$35.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="protector solar defense total l'bel" data-category="PROTECTOR SOLAR">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1ybDVQ88b7-7orbOJbOTja9BVRdpY8aKU" alt="DEFENSE TOTAL" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">L'BEL</div>
+                    <div class="title">PROTECTOR SOLAR DEFENSE TOTAL</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$35.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="skincare serum intensivo reductor arrugas l'bel" data-category="SKINCARE">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1Cb5MJz2nzRa8ZBp_IRCKVx3lGzMR3Ajk" alt="SERUM INTENSIVO REDUCTOR ARRUGAS" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">L'BEL</div>
+                    <div class="title">SKINCARE SERUM INTENSIVO REDUCTOR ARRUGAS</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$70.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="skincare serum vitamina c avon" data-category="SKINCARE">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1PNGkYleXphSXtjOXe0iUO1kg01-pjvvV" alt="SERUM VITAMINA C" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">AVON</div>
+                    <div class="title">SKINCARE SERUM VITAMINA C</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$35.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="skincare gel hidratante con acido hialuronico l'bel" data-category="SKINCARE">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1AEqOipThadMY0SRj7Yu1ntyQQvQFy755" alt="GEL HIDRATANTE CON ACIDO HIALURONICO" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">L'BEL</div>
+                    <div class="title">SKINCARE GEL HIDRATANTE CON ACIDO HIALURONICO</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$80.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="cuidado del cabello serum tratamiento dream liso l'oreal" data-category="CUIDADO DEL CABELLO">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1IWpVlevqflyEJRajDJY2p2FbXIT1k-Mv" alt="SERUM TRATAMIENTO DREAM LISO" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">L'OREAL</div>
+                    <div class="title">CUIDADO DEL CABELLO SERUM TRATAMIENTO DREAM LISO</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$40.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="cuidado del cabello mascarilla tratamiento reparacion flor de cereza y aguacate natura" data-category="CUIDADO DEL CABELLO">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1VACLs3ZdH-88IiWigYYaeliEBXd187zl" alt="MASCARILLA TRATAMIENTO REPARACION FLOR DE CEREZA Y AGUACATE" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">CUIDADO DEL CABELLO MASCARILLA TRATAMIENTO REPARACION FLOR DE CEREZA Y AGUACATE</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$36.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="skincare crema hidratante pond's" data-category="SKINCARE">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1yRUF2JluWuRI9Dene1PBWxizN25do0f4" alt="CREMA HIDRATANTE" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">POND'S</div>
+                    <div class="title">SKINCARE CREMA HIDRATANTE</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$25.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="accesorios bolso manos libres color camel leonisa" data-category="ACCESORIOS">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1C-l-qEfykudxFsgs3HRVZVXe00qfx7U_" alt="BOLSO MANOS LIBRES COLOR CAMEL" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">LEONISA</div>
+                    <div class="title">ACCESORIOS BOLSO MANOS LIBRES COLOR CAMEL</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$35.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="jabones vegetales cacao con estuche - edición especial natura" data-category="JABONES VEGETALES">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/17FP5tRVuCvte4Ma0yogn0OqDexUfF0rB" alt="CACAO CON ESTUCHE - EDICIÓN ESPECIAL" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge disponible">DISPONIBLE</span>
+                    <div class="brand">NATURA</div>
+                    <div class="title">JABONES VEGETALES CACAO CON ESTUCHE - EDICIÓN ESPECIAL</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$50.000</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-search="shampoo anticaida dr. c. tuna farmasi" data-category="SHAMPOO">
+            <div class="img-container"><img src="https://lh3.googleusercontent.com/d/1_zVcVZkcJxX-yyAUDiK4cWMfaHvu6ivU" alt="ANTICAIDA DR. C. TUNA" loading="lazy"></div>
+            <div class="card-body">
+                <div>
+                    <span class="badge no-disponible">AGOTADO</span>
+                    <div class="brand">FARMASI</div>
+                    <div class="title">SHAMPOO ANTICAIDA DR. C. TUNA</div>
+                </div>
+                <div class="footer-card">
+                    <span class="price">$40.000</span>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <script>
+        let currentCategory = 'TODOS';
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+        function filterCatalog() {
+            let query = document.getElementById('searchInput').value.toLowerCase().trim();
+            let cards = document.getElementsByClassName('card');
+            for (let card of cards) {
+                let text = card.getAttribute('data-search');
+                let cat = card.getAttribute('data-category');
+                let matchSearch = text.includes(query);
+                let matchCat = (currentCategory === 'TODOS' || cat === currentCategory);
+                card.style.display = (matchSearch && matchCat) ? "" : "none";
+            }
+        }
+        function filterByCategory(cat, btn) {
+            currentCategory = cat;
+            for (let b of document.getElementsByClassName('cat-btn-sidebar')) b.classList.remove('active');
+            btn.classList.add('active');
+            filterCatalog();
+            toggleSidebar();
+        }
+    </script>
+</body>
+</html>
